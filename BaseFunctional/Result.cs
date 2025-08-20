@@ -82,18 +82,30 @@ public readonly record struct Result<T, TE1>
     public void Switch(Action<T> onSuccess, Action<TE1> onError)
     {
         if (_isSuccess && _value is not null)
+        {
             NotNull(onSuccess)(_value!);
+            return;
+        }
         if (!_isSuccess && _error is not null)
+        {
             NotNull(onError)(_error!);
+            return;
+        }
         Result.ThrowResultInvalidException<int>();
     }
 
     public void Switch<TData>(TData data, Action<T, TData> onSuccess, Action<TE1, TData> onError)
     {
         if (_isSuccess && _value is not null)
+        {
             NotNull(onSuccess)(_value!, data);
+            return;
+        }
         if (!_isSuccess && _error is not null)
+        {
             NotNull(onError)(_error!, data);
+            return;
+        }
         Result.ThrowResultInvalidException<int>();
     }
 
@@ -233,22 +245,40 @@ public readonly record struct Result<T, TE1, TE2>
     public void Switch(Action<T> onSuccess, Action<TE1> onError1, Action<TE2> onError2)
     {
         if (_index == 0 && _value is not null)
+        {
             NotNull(onSuccess)(_value!);
+            return;
+        }
         if (_index == 1 && _e1 is not null)
+        {
             NotNull(onError1)(_e1!);
+            return;
+        }
         if (_index == 2 && _e2 is not null)
+        {
             NotNull(onError2)(_e2!);
+            return;
+        }
         Result.ThrowResultInvalidException<int>();
     }
 
     public void Switch<TData>(TData data, Action<T, TData> onSuccess, Action<TE1, TData> onError1, Action<TE2, TData> onError2)
     {
         if (_index == 0 && _value is not null)
+        {
             NotNull(onSuccess)(_value!, data);
+            return;
+        }
         if (_index == 1 && _e1 is not null)
+        {
             NotNull(onError1)(_e1!, data);
+            return;
+        }
         if (_index == 2 && _e2 is not null)
+        {
             NotNull(onError2)(_e2!, data);
+            return;
+        }
         Result.ThrowResultInvalidException<int>();
     }
 
@@ -387,26 +417,50 @@ public readonly record struct Result<T, TE1, TE2, TE3>
     public void Switch(Action<T> onSuccess, Action<TE1> onError1, Action<TE2> onError2, Action<TE3> onError3)
     {
         if (_index == 0 && _value is not null)
+        {
             NotNull(onSuccess)(_value!);
+            return;
+        }
         if (_index == 1 && _e1 is not null)
+        {
             NotNull(onError1)(_e1!);
+            return;
+        }
         if (_index == 2 && _e2 is not null)
+        {
             NotNull(onError2)(_e2!);
+            return;
+        }
         if (_index == 3 && _e3 is not null)
+        {
             NotNull(onError3)(_e3!);
+            return;
+        }
         Result.ThrowResultInvalidException<int>();
     }
 
     public void Switch<TData>(TData data, Action<T, TData> onSuccess, Action<TE1, TData> onError1, Action<TE2, TData> onError2, Action<TE3, TData> onError3)
     {
         if (_index == 0 && _value is not null)
+        {
             NotNull(onSuccess)(_value!, data);
+            return;
+        }
         if (_index == 1 && _e1 is not null)
+        {
             NotNull(onError1)(_e1!, data);
+            return;
+        }
         if (_index == 2 && _e2 is not null)
+        {
             NotNull(onError2)(_e2!, data);
+            return;
+        }
         if (_index == 3 && _e3 is not null)
+        {
             NotNull(onError3)(_e3!, data);
+            return;
+        }
         Result.ThrowResultInvalidException<int>();
     }
 
