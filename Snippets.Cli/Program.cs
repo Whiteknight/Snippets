@@ -9,14 +9,18 @@ internal class Program
     {
         var services = new ServiceCollection();
         services.UseMediator();
-        services.AddHandlerSingleton<TestHandler, TestRequest, TestResponse, Exception>();
-        services.AddSingleton<IHandlerDecorator<TestRequest, TestResponse, Exception>, TestDecorator>();
+        //services.AddHandlerSingleton<TestHandler>();
+        services.AddHandler<TestRequest, TestResponse, Exception>(HandlerFunction);
+        services.AddHandlerDecoratorSingleton<TestDecorator>();
         var provider = services.BuildServiceProvider();
         var mediator = provider.GetRequiredService<IMediator>();
 
         var result = mediator.Send<TestRequest, TestResponse, Exception>(new TestRequest(5));
         result.OnSuccess(v => Console.WriteLine(v));
     }
+
+    private static Result<TestResponse, Exception> HandlerFunction(TestRequest request)
+        => new TestResponse($"Function Value is {request.Value}");
 }
 
 public sealed record TestResponse(string Value);
@@ -31,8 +35,16 @@ public sealed class TestHandler : IHandler<TestRequest, TestResponse, Exception>
 
 public sealed class TestDecorator : IHandlerDecorator<TestRequest, TestResponse, Exception>
 {
-    public void After(TestRequest request, Result<TestResponse, Exception> result)
-        => Console.WriteLine($"After: {request}, {result}");
-    public void Before(TestRequest request) => Console.WriteLine($"Before: {request}");
+    public Result<TestResponse, Exception> After(TestRequest request, Result<TestResponse, Exception> result)
+    {
+        Console.WriteLine($"After: {request}, {result}");
+        return result.Map(v => new TestResponse($"Decorated {v.Value}"));
+    }
+
+    public TestRequest Before(TestRequest request)
+    {
+        Console.WriteLine($"Before: {request}");
+        return new TestRequest(request.Value + 1);
+    }
 }
 

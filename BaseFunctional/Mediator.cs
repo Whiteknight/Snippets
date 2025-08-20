@@ -3,37 +3,42 @@ using static BaseFunctional.Assert;
 
 namespace BaseFunctional;
 
-public interface IRequest<in TResponse, out TResponseError>;
+public interface IRequest<in TResponse, out TError>;
 
-public interface IHandler<in TRequest, TResponse, TResponseError>
-    where TRequest : IRequest<TResponse, TResponseError>
+public interface IHandler;
+
+public interface IHandler<in TRequest, TResponse, TError> : IHandler
+    where TRequest : IRequest<TResponse, TError>
 {
-    Result<TResponse, TResponseError> Handle(TRequest request);
+    Result<TResponse, TError> Handle(TRequest request);
 }
 
-public interface IHandlerDecorator<TRequest, TResponse, TResponseError>
+public interface IHandlerDecorator;
+
+public interface IHandlerDecorator<TRequest, TResponse, TError> : IHandlerDecorator
 {
-    void Before(TRequest request);
-    void After(TRequest request, Result<TResponse, TResponseError> result);
+    TRequest Before(TRequest request);
+
+    Result<TResponse, TError> After(TRequest request, Result<TResponse, TError> result);
 }
 
-public sealed class DelegateHandler<TRequest, TResponse, TResponseError> : IHandler<TRequest, TResponse, TResponseError>
-    where TRequest : IRequest<TResponse, TResponseError>
+public sealed class DelegateHandler<TRequest, TResponse, TError> : IHandler<TRequest, TResponse, TError>
+    where TRequest : IRequest<TResponse, TError>
 {
-    private readonly Func<TRequest, Result<TResponse, TResponseError>> _func;
+    private readonly Func<TRequest, Result<TResponse, TError>> _func;
 
-    public DelegateHandler(Func<TRequest, Result<TResponse, TResponseError>> func)
+    public DelegateHandler(Func<TRequest, Result<TResponse, TError>> func)
     {
         _func = NotNull(func);
     }
 
-    public Result<TResponse, TResponseError> Handle(TRequest request) => _func(request);
+    public Result<TResponse, TError> Handle(TRequest request) => _func(request);
 }
 
 public interface IMediator
 {
-    Result<TResponse, TResponseError> Send<TRequest, TResponse, TResponseError>(TRequest request)
-        where TRequest : IRequest<TResponse, TResponseError>;
+    Result<TResponse, TError> Send<TRequest, TResponse, TError>(TRequest request)
+        where TRequest : IRequest<TResponse, TError>;
 }
 
 public sealed class ServiceProviderMediator : IMediator
@@ -45,16 +50,13 @@ public sealed class ServiceProviderMediator : IMediator
         _provider = NotNull(provider);
     }
 
-    public Result<TResponse, TResponseError> Send<TRequest, TResponse, TResponseError>(TRequest request)
-        where TRequest : IRequest<TResponse, TResponseError>
+    public Result<TResponse, TError> Send<TRequest, TResponse, TError>(TRequest request)
+        where TRequest : IRequest<TResponse, TError>
     {
-        var stages = _provider.GetServices<IHandlerDecorator<TRequest, TResponse, TResponseError>>();
-        foreach (var stage in stages)
-            stage.Before(request);
-        var result = _provider.GetRequiredService<IHandler<TRequest, TResponse, TResponseError>>().Handle(request);
-        foreach (var stage in stages.Reverse())
-            stage.After(request, result);
-        return result;
+        var stages = _provider.GetServices<IHandlerDecorator<TRequest, TResponse, TError>>();
+        request = stages.Aggregate(request, (prev, stage) => stage.Before(prev));
+        var result = _provider.GetRequiredService<IHandler<TRequest, TResponse, TError>>().Handle(request);
+        return stages.Reverse().Aggregate(result, (prev, stage) => stage.After(request, prev));
     }
 }
 
@@ -62,45 +64,56 @@ public static class ServiceCollectionMediatorExtensions
 {
     public static IServiceCollection UseMediator(this IServiceCollection services)
         => services.AddSingleton<IMediator, ServiceProviderMediator>();
-    public static IServiceCollection AddHandlerTransient<THandler, TRequest, TResponse, TResponseError>(this IServiceCollection services)
-        where THandler : class, IHandler<TRequest, TResponse, TResponseError>
-        where TRequest : IRequest<TResponse, TResponseError>
+
+    public static IServiceCollection AddHandlerSingleton<THandler>(this IServiceCollection services)
+        where THandler : class, IHandler
     {
-        return services.AddTransient<IHandler<TRequest, TResponse, TResponseError>, THandler>();
+        foreach (var handlerInterface in typeof(THandler).GetHandlerInterfaces())
+            services.AddSingleton(handlerInterface, typeof(THandler));
+        return services;
     }
 
-    public static IServiceCollection AddHandlerTransient<TRequest, TResponse, TResponseError>(this IServiceCollection services, Func<TRequest, Result<TResponse, TResponseError>> func)
-        where TRequest : IRequest<TResponse, TResponseError>
+    public static IServiceCollection AddHandlerScoped<THandler>(this IServiceCollection services)
+        where THandler : class, IHandler
     {
-        var handler = new DelegateHandler<TRequest, TResponse, TResponseError>(func);
-        return services.AddTransient<IHandler<TRequest, TResponse, TResponseError>>(_ => handler);
+        foreach (var handlerInterface in typeof(THandler).GetHandlerInterfaces())
+            services.AddScoped(handlerInterface, typeof(THandler));
+        return services;
     }
 
-    public static IServiceCollection AddHandlerScoped<THandler, TRequest, TResponse, TResponseError>(this IServiceCollection services)
-        where THandler : class, IHandler<TRequest, TResponse, TResponseError>
-        where TRequest : IRequest<TResponse, TResponseError>
+    public static IServiceCollection AddHandlerTransient<THandler>(this IServiceCollection services)
+        where THandler : class, IHandler
     {
-        return services.AddScoped<IHandler<TRequest, TResponse, TResponseError>, THandler>();
+        foreach (var handlerInterface in typeof(THandler).GetHandlerInterfaces())
+            services.AddTransient(handlerInterface, typeof(THandler));
+        return services;
     }
 
-    public static IServiceCollection AddHandlerScoped<TRequest, TResponse, TResponseError>(this IServiceCollection services, Func<TRequest, Result<TResponse, TResponseError>> func)
-        where TRequest : IRequest<TResponse, TResponseError>
+    public static IServiceCollection AddHandler<TRequest, TResponse, TError>(this IServiceCollection services, Func<TRequest, Result<TResponse, TError>> func)
+        where TRequest : IRequest<TResponse, TError>
     {
-        var handler = new DelegateHandler<TRequest, TResponse, TResponseError>(func);
-        return services.AddScoped<IHandler<TRequest, TResponse, TResponseError>>(_ => handler);
+        var handler = new DelegateHandler<TRequest, TResponse, TError>(func);
+        return services.AddSingleton<IHandler<TRequest, TResponse, TError>>(_ => handler);
     }
 
-    public static IServiceCollection AddHandlerSingleton<THandler, TRequest, TResponse, TResponseError>(this IServiceCollection services)
-        where THandler : class, IHandler<TRequest, TResponse, TResponseError>
-        where TRequest : IRequest<TResponse, TResponseError>
+    public static IServiceCollection AddHandlerDecoratorSingleton<TDecorator>(this IServiceCollection services)
+        where TDecorator : class, IHandlerDecorator
     {
-        return services.AddSingleton<IHandler<TRequest, TResponse, TResponseError>, THandler>();
+        foreach (var iface in typeof(TDecorator).GetHandlerDecoratorInterfaces())
+            services.AddSingleton(iface, typeof(TDecorator));
+        return services;
     }
+}
 
-    public static IServiceCollection AddHandlerSingleton<TRequest, TResponse, TResponseError>(this IServiceCollection services, Func<TRequest, Result<TResponse, TResponseError>> func)
-        where TRequest : IRequest<TResponse, TResponseError>
-    {
-        var handler = new DelegateHandler<TRequest, TResponse, TResponseError>(func);
-        return services.AddSingleton<IHandler<TRequest, TResponse, TResponseError>>(_ => handler);
-    }
+public static class MediatorTypeExtensions
+{
+    public static IEnumerable<Type> GetHandlerInterfaces(this Type t)
+        => GetInterfacesClosing(t, typeof(IHandler<,,>));
+
+    public static IEnumerable<Type> GetHandlerDecoratorInterfaces(this Type t)
+        => GetInterfacesClosing(t, typeof(IHandlerDecorator<,,>));
+
+    public static IEnumerable<Type> GetInterfacesClosing(this Type t, Type openInterfaceType)
+        => t.GetInterfaces()
+            .Where(i => i.IsGenericType && i.GetGenericTypeDefinition() == openInterfaceType);
 }
