@@ -25,6 +25,9 @@ public readonly struct NonNegativeInteger
     public int Value { get; }
 }
 
+// Following the idea of "Parse, don't validate" these methods can be used to parse some primitive values
+// into more structured, limited types. Obviously this list of methods will have to expand to cover
+// more types and more cases.
 public static class Verify
 {
     public static Result<NonNullString, VerifyError> NotNull(string? value, [CallerArgumentExpression(nameof(value))] string? name = null)

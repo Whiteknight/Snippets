@@ -44,6 +44,11 @@ public static class Validation
                 _ => []
             })
             .ToArray();
+        return Combine(list);
+    }
+
+    public static IValidator<T> Combine<T>(params IValidator<T>[] list)
+    {
         return list switch
         {
             [] => new NullValidator<T>(),
