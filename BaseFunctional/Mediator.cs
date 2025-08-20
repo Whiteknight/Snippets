@@ -11,6 +11,12 @@ public interface IHandler<in TRequest, TResponse, TResponseError>
     Result<TResponse, TResponseError> Handle(TRequest request);
 }
 
+public interface IHandlerDecorator<TRequest, TResponse, TResponseError>
+{
+    void Before(TRequest request);
+    void After(TRequest request, Result<TResponse, TResponseError> result);
+}
+
 public sealed class DelegateHandler<TRequest, TResponse, TResponseError> : IHandler<TRequest, TResponse, TResponseError>
     where TRequest : IRequest<TResponse, TResponseError>
 {
@@ -42,7 +48,13 @@ public sealed class ServiceProviderMediator : IMediator
     public Result<TResponse, TResponseError> Send<TRequest, TResponse, TResponseError>(TRequest request)
         where TRequest : IRequest<TResponse, TResponseError>
     {
-        return _provider.GetRequiredService<IHandler<TRequest, TResponse, TResponseError>>().Handle(request);
+        var stages = _provider.GetServices<IHandlerDecorator<TRequest, TResponse, TResponseError>>();
+        foreach (var stage in stages)
+            stage.Before(request);
+        var result = _provider.GetRequiredService<IHandler<TRequest, TResponse, TResponseError>>().Handle(request);
+        foreach (var stage in stages.Reverse())
+            stage.After(request, result);
+        return result;
     }
 }
 
