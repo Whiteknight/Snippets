@@ -4,39 +4,39 @@ namespace BaseFunctional;
 
 public readonly record struct Maybe<T>
 {
-    private readonly bool _isSuccess;
+    private readonly bool _hasValue;
     private readonly T? _value;
 
-    public Maybe(T? value, bool isSuccess)
+    public Maybe(T? value, bool hasValue)
     {
-        if (isSuccess)
+        if (hasValue)
         {
             _value = NotNull(value);
-            _isSuccess = true;
+            _hasValue = true;
         }
     }
 
     public static implicit operator Maybe<T>(T value) => new Maybe<T>(value, true);
 
-    public TOut Match<TOut>(Func<T, TOut> onSuccess, Func<TOut> onError)
+    public TOut Match<TOut>(Func<T, TOut> onValue, Func<TOut> onNoValue)
     {
-        if (_isSuccess && _value is not null)
-            return NotNull(onSuccess)(_value!);
-        if (!_isSuccess)
-            return NotNull(onError)();
+        if (_hasValue && _value is not null)
+            return NotNull(onValue)(_value!);
+        if (!_hasValue)
+            return NotNull(onNoValue)();
         throw new InvalidOperationException("Result is in an invalid state");
     }
 
-    public TOut Match<TOut, TData>(TData data, Func<T, TData, TOut> onSuccess, Func<TData, TOut> onError)
+    public TOut Match<TOut, TData>(TData data, Func<T, TData, TOut> onValue, Func<TData, TOut> onNoValue)
     {
-        if (_isSuccess && _value is not null)
-            return NotNull(onSuccess)(_value!, data);
-        if (!_isSuccess)
-            return NotNull(onError)(data);
+        if (_hasValue && _value is not null)
+            return NotNull(onValue)(_value!, data);
+        if (!_hasValue)
+            return NotNull(onNoValue)(data);
         throw new InvalidOperationException("Result is in an invalid state");
     }
 
-    public Result<T, TError> MapError<TError>(Func<TError> createError)
+    public Result<T, TError> ToResult<TError>(Func<TError> createError)
         => Match(createError,
             static (t, _) => new Result<T, TError>(t, default, true),
             static c => new Result<T, TError>(default, c(), false));

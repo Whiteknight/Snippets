@@ -28,6 +28,11 @@ public static class Result
                 static (v2, d2) => new Result<TOut, TE1, TE2>(d2.combine(d2.v1, v2), default, default, 0),
                 static (e2, _) => new Result<TOut, TE1, TE2>(default, default, e2, 2)),
             static (e1, _) => new Result<TOut, TE1, TE2>(default, e1, default, 1));
+
+    public static Result<T2, T1> Invert<T1, T2>(this Result<T1, T2> result)
+        => result.Match(
+            t1 => new Result<T2, T1>(default, t1, false),
+            t2 => new Result<T2, T1>(t2, default, true));
 }
 
 public readonly record struct Result<T, TE1>
