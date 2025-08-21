@@ -42,6 +42,12 @@ public abstract record ConnectivityError(string Message, Exception Exception)
 public abstract record QueryError(string Message, string Query)
     : DataError($"Query Problem: {Message}. Query: {Query}");
 
+// We're trying to insert something with a conflicted unique field. For instance a non-primarykey
+// unique column like a "code" or "name" may have a duplicate value which causes a conflict
+// and returns 409 Conflict.
+public sealed record EntityConflict(string Type, EntityLookup Key)
+    : DataError($"Could not insert/update entity of type {Type} because of conflicted values {Key}");
+
 // We tried to load a single entity by id or some other compound key, but it could not be found/loaded
 // Notice that EntityNotFound is not an "exceptional error" per se. This is a normal response to
 // an unfortunately common occurance of users looking for the wrong thing. We want to tell the user,
