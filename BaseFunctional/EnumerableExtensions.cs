@@ -1,7 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 
-
-
 namespace BaseFunctional;
 
 public static class EnumerableExtensions

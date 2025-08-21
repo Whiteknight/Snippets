@@ -117,7 +117,8 @@ public readonly record struct Result<T, TE1>
         => Match(NotNull(func), static (v, f) => f(v), static (e, _) => e);
 
     // Combine two results with different errors, into a single result with two possible errors
-    public Result<TOut, TE1, TE2> And<TOut, TE2>(Func<T, Result<TOut, TE2>> func)
+    // TODO: Looking for a better name for this. .And() creates ambiguities with the method above
+    public Result<TOut, TE1, TE2> AndThen<TOut, TE2>(Func<T, Result<TOut, TE2>> func)
         => Match(
             NotNull(func),
             static (v, f) => f(v).Match(
