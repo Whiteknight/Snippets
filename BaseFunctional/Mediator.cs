@@ -37,8 +37,7 @@ public sealed class DelegateHandler<TRequest, TResponse, TError> : IHandler<TReq
 
 public interface IMediator
 {
-    Result<TResponse, TError> Send<TRequest, TResponse, TError>(TRequest request)
-        where TRequest : IRequest<TResponse, TError>;
+    Result<TResponse, TError> Send<TResponse, TError>(IRequest<TResponse, TError> request);
 }
 
 public sealed class ServiceProviderMediator : IMediator
@@ -50,13 +49,28 @@ public sealed class ServiceProviderMediator : IMediator
         _provider = NotNull(provider);
     }
 
-    public Result<TResponse, TError> Send<TRequest, TResponse, TError>(TRequest request)
+    public Result<TResponse, TError> Send<TResponse, TError>(IRequest<TResponse, TError> request)
+    {
+        var senderType = typeof(Sender<,,>).MakeGenericType(request.GetType(), typeof(TResponse), typeof(TError));
+        var sender = Activator.CreateInstance(senderType) as ISender<TResponse, TError>;
+        return sender?.Send(request, _provider) ?? default;
+    }
+
+    private interface ISender<TResponse, TError>
+    {
+        Result<TResponse, TError> Send(IRequest<TResponse, TError> request, IServiceProvider provider);
+    }
+
+    private sealed class Sender<TRequest, TResponse, TError> : ISender<TResponse, TError>
         where TRequest : IRequest<TResponse, TError>
     {
-        var stages = _provider.GetServices<IHandlerDecorator<TRequest, TResponse, TError>>();
-        request = stages.Aggregate(request, (prev, stage) => stage.Before(prev));
-        var result = _provider.GetRequiredService<IHandler<TRequest, TResponse, TError>>().Handle(request);
-        return stages.Reverse().Aggregate(result, (prev, stage) => stage.After(request, prev));
+        public Result<TResponse, TError> Send(IRequest<TResponse, TError> request, IServiceProvider provider)
+        {
+            var stages = provider.GetServices<IHandlerDecorator<TRequest, TResponse, TError>>();
+            var typedRequest = stages.Aggregate((TRequest)request, (prev, stage) => stage.Before(prev));
+            var result = provider.GetRequiredService<IHandler<TRequest, TResponse, TError>>().Handle(typedRequest);
+            return stages.Reverse().Aggregate(result, (prev, stage) => stage.After(typedRequest, prev));
+        }
     }
 }
 
