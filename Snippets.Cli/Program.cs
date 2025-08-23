@@ -15,7 +15,7 @@ internal class Program
         var provider = services.BuildServiceProvider();
         var mediator = provider.GetRequiredService<IMediator>();
 
-        var result = mediator.Send<TestRequest, TestResponse, Exception>(new TestRequest(5));
+        var result = mediator.Send(new TestRequest(5));
         result.OnSuccess(v => Console.WriteLine(v));
     }
 
