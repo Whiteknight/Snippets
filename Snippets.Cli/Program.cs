@@ -47,4 +47,3 @@ public sealed class TestDecorator : IHandlerDecorator<TestRequest, TestResponse,
         return new TestRequest(request.Value + 1);
     }
 }
-
