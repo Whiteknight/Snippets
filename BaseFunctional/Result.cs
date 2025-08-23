@@ -10,7 +10,7 @@ public static class Result
         => throw new InvalidOperationException("Result is in an invalid state");
 
     // Given two separate existing results, Join them together into a single new result.
-    // If both input results are success, return a new result with a combined value.
+    // If both input results are success, return a new result with a combined value.e
     // Otherwise if either result is an error, return a failure result with that error.
     public static Result<TOut, TE1, TE2> Combine<T1, TE1, T2, TE2, TOut>(this Result<T1, TE1> r1, Result<T2, TE2> r2, Func<T1, T2, TOut> combine)
         => r1.Match((combine: NotNull(combine), r2),
@@ -31,67 +31,67 @@ public static class Result
 
     public static Result<T2, T1> Invert<T1, T2>(this Result<T1, T2> result)
         => result.Match(
-            t1 => new Result<T2, T1>(default, t1, false),
-            t2 => new Result<T2, T1>(t2, default, true));
+            t1 => new Result<T2, T1>(default, t1, 1),
+            t2 => new Result<T2, T1>(t2, default, 0));
+
+    public static Result<T, TE1> Create<T, TE1>(T value)
+        => new Result<T, TE1>(value, default, 0);
+
+    public static Result<T, TE1> Create<T, TE1>(TE1 error1)
+        => new Result<T, TE1>(default, error1, 1);
 }
 
 public readonly record struct Result<T, TE1>
 {
-    private readonly bool _isSuccess;
+    private readonly int _index;
     private readonly T? _value;
     private readonly TE1? _error;
 
-    public Result(T? value, TE1? error, bool isSuccess)
+    public Result(T? value, TE1? error, int index)
     {
-        if (isSuccess)
-        {
+        _index = index;
+        if (index == 0)
             _value = NotNull(value);
-            _isSuccess = true;
-        }
-        else
-        {
+        else if (index == 1)
             _error = NotNull(error);
-            _isSuccess = false;
-
-        }
     }
 
-    public bool IsSuccess => _isSuccess && _value is not null;
-    public bool IsError => !_isSuccess && _error is not null;
+    public bool IsSuccess => _index == 0 && _value is not null;
+    public bool IsError => _index == 1 && _error is not null;
     public bool IsValid => IsSuccess || IsError;
 
     public static implicit operator Result<T, TE1>(T value)
-        => new Result<T, TE1>(value, default, true);
+        => new Result<T, TE1>(value, default, 0);
 
     public static implicit operator Result<T, TE1>(TE1 error)
-        => new Result<T, TE1>(default, error, false);
+        => new Result<T, TE1>(default, error, 1);
 
     public TOut Match<TOut>(Func<T, TOut> onSuccess, Func<TE1, TOut> onError)
     {
-        if (_isSuccess && _value is not null)
+        if (_index == 0 && _value is not null)
             return NotNull(onSuccess)(_value!);
-        if (!_isSuccess && _error is not null)
+        if (_index == 1 && _error is not null)
             return NotNull(onError)(_error!);
         return Result.ThrowResultInvalidException<TOut>();
     }
 
     public TOut Match<TOut, TData>(TData data, Func<T, TData, TOut> onSuccess, Func<TE1, TData, TOut> onError)
     {
-        if (_isSuccess && _value is not null)
+        if (_index == 0 && _value is not null)
             return NotNull(onSuccess)(_value!, data);
-        if (!_isSuccess && _error is not null)
+        if (_index == 1 && _error is not null)
             return NotNull(onError)(_error!, data);
         return Result.ThrowResultInvalidException<TOut>();
     }
 
     public void Switch(Action<T> onSuccess, Action<TE1> onError)
     {
-        if (_isSuccess && _value is not null)
+        if (_index == 0 && _value is not null)
         {
             NotNull(onSuccess)(_value!);
             return;
         }
-        if (!_isSuccess && _error is not null)
+        if (_index == 1 && _error is not null)
         {
             NotNull(onError)(_error!);
             return;
@@ -101,12 +101,12 @@ public readonly record struct Result<T, TE1>
 
     public void Switch<TData>(TData data, Action<T, TData> onSuccess, Action<TE1, TData> onError)
     {
-        if (_isSuccess && _value is not null)
+        if (_index == 0 && _value is not null)
         {
             NotNull(onSuccess)(_value!, data);
             return;
         }
-        if (!_isSuccess && _error is not null)
+        if (_index == 1 && _error is not null)
         {
             NotNull(onError)(_error!, data);
             return;
@@ -144,21 +144,21 @@ public readonly record struct Result<T, TE1>
     // If this result fails, take the second result. Use the error type of the second result in
     // either case.
     public Result<T, TError2> Or<TError2>(Func<TE1, Result<T, TError2>> func)
-        => Match(static v => new Result<T, TError2>(v, default, true), func);
+        => Match(static v => new Result<T, TError2>(v, default, 0), func);
 
     // Map the success result value
     public Result<TOut, TE1> Map<TOut>(Func<T, TOut> map)
         => Match(
             NotNull(map),
-            static (v, m) => new Result<TOut, TE1>(m(v), default, true),
-            static (e, _) => new Result<TOut, TE1>(default, e, false));
+            static (v, m) => new Result<TOut, TE1>(m(v), default, 0),
+            static (e, _) => new Result<TOut, TE1>(default, e, 1));
 
     // Map the error result value.
     public Result<T, TErrorOut> MapError<TErrorOut>(Func<TE1, TErrorOut> map)
         => Match(
             NotNull(map),
-            static (v, _) => new Result<T, TErrorOut>(v, default, true),
-            static (e, m) => new Result<T, TErrorOut>(default, m(e), false));
+            static (v, _) => new Result<T, TErrorOut>(v, default, 0),
+            static (e, m) => new Result<T, TErrorOut>(default, m(e), 1));
 
     public Result<T, TE1> OnSuccess(Action<T> onSuccess)
     {
@@ -313,9 +313,9 @@ public readonly record struct Result<T, TE1, TE2>
     public Result<T, TErrorOut> MapError<TErrorOut>(Func<TE1, TErrorOut> map1, Func<TE2, TErrorOut> map2)
         => Match(
             (map1, map2),
-            static (v, _) => new Result<T, TErrorOut>(v, default, true),
-            static (e, m) => new Result<T, TErrorOut>(default, m.map1(e), false),
-            static (e, m) => new Result<T, TErrorOut>(default, m.map2(e), false));
+            static (v, _) => new Result<T, TErrorOut>(v, default, 0),
+            static (e, m) => new Result<T, TErrorOut>(default, m.map1(e), 1),
+            static (e, m) => new Result<T, TErrorOut>(default, m.map2(e), 1));
 
     public Result<T, TE1, TE2> OnSuccess(Action<T> onSuccess)
     {
@@ -487,10 +487,10 @@ public readonly record struct Result<T, TE1, TE2, TE3>
     public Result<T, TErrorOut> MapError<TErrorOut>(Func<TE1, TErrorOut> map1, Func<TE2, TErrorOut> map2, Func<TE3, TErrorOut> map3)
         => Match(
             (map1, map2, map3),
-            static (v, _) => new Result<T, TErrorOut>(v, default, true),
-            static (e, m) => new Result<T, TErrorOut>(default, m.map1(e), false),
-            static (e, m) => new Result<T, TErrorOut>(default, m.map2(e), false),
-            static (e, m) => new Result<T, TErrorOut>(default, m.map3(e), false));
+            static (v, _) => new Result<T, TErrorOut>(v, default, 0),
+            static (e, m) => new Result<T, TErrorOut>(default, m.map1(e), 1),
+            static (e, m) => new Result<T, TErrorOut>(default, m.map2(e), 1),
+            static (e, m) => new Result<T, TErrorOut>(default, m.map3(e), 1));
 
     public Result<T, TE1, TE2, TE3> OnSuccess(Action<T> onSuccess)
     {
