@@ -19,6 +19,7 @@ public static class IMap<TSource>
     }
 }
 
+// Convert IMap<S>.OnTo<T> to IMap<S>.To<T> (where there is a default parameterless constructor)
 public sealed class OnToMappingAdaptor<TSource, TTarget> : IMap<TSource>.To<TTarget>
     where TTarget : new()
 {
@@ -37,6 +38,7 @@ public sealed class OnToMappingAdaptor<TSource, TTarget> : IMap<TSource>.To<TTar
     }
 }
 
+// Mapping interface which supports returning a Result instead of throwing exceptions in case of error
 public static class ITryMap<TSource>
 {
     public interface To<TTarget>
