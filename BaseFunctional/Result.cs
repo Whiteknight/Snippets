@@ -41,7 +41,7 @@ public static class Result
         => new Result<T, TE1>(default, error1, 1);
 }
 
-public readonly record struct Result<T, TE1>
+public readonly record struct Result<T, TE1> : IEquatable<T>
 {
     private readonly int _index;
     private readonly T? _value;
@@ -179,10 +179,16 @@ public readonly record struct Result<T, TE1>
         => Match(defaultValue, static (_, d) => d, static (e, _) => e);
 
     public bool Is(T expected)
-        => Match(expected, static (v, e) => v!.Equals(e), static (_, _) => false);
+        => expected is not null && Match(expected, static (v, e) => v!.Equals(e), static (_, _) => false);
 
     public bool Is(Func<T, bool> predicate)
         => Match(predicate, static _ => false);
+
+    public bool Equals(T? other)
+        => other is not null && Match(
+            other,
+            static (v, o) => v!.Equals(o),
+            static (_, _) => false);
 }
 
 public readonly record struct Result<T, TE1, TE2>

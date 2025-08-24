@@ -2,7 +2,7 @@
 
 namespace BaseFunctional;
 
-public readonly record struct Maybe<T>
+public readonly record struct Maybe<T> : IEquatable<Maybe<T>>, IEquatable<T>
 {
     private readonly bool _hasValue;
     private readonly T? _value;
@@ -38,14 +38,26 @@ public readonly record struct Maybe<T>
 
     public Result<T, TError> ToResult<TError>(Func<TError> createError)
         => Match(createError,
-            static (t, _) => new Result<T, TError>(t, default, true),
-            static c => new Result<T, TError>(default, c(), false));
+            static (t, _) => new Result<T, TError>(t, default, 0),
+            static c => new Result<T, TError>(default, c(), 1));
 
     public T GetValueOrDefault(T defaultValue)
         => Match(
             defaultValue,
             static (t, _) => t,
             static d => d);
+
+    public bool Is(Func<T, bool> predicate)
+        => Match(
+            predicate,
+            static (v, p) => p(v),
+            static _ => false);
+
+    public bool Equals(T? other)
+        => other is not null && Match(
+            other,
+            static (v, o) => v.Equals(o),
+            static _ => false);
 }
 
 public static class MaybeExtensions
