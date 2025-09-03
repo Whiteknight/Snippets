@@ -81,6 +81,20 @@ public sealed class NullValidator<T> : IValidator<T>
         => [];
 }
 
+public sealed class FailValidator<T> : IValidator<T>
+{
+    private const string _defaultMessage = "Validation Failure";
+    private readonly ValidationEntry[] _entry;
+
+    public FailValidator(string? name, string? description)
+    {
+        _entry = [new ValidationEntry(name ?? string.Empty, description ?? _defaultMessage)];
+    }
+
+    public IEnumerable<ValidationEntry> GetValidationEntries(T value)
+        => _entry;
+}
+
 public sealed class DelegateValidator<T> : IValidator<T>
 {
     private readonly Func<T, IEnumerable<ValidationEntry>> _validate;
