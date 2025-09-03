@@ -1,4 +1,6 @@
-﻿namespace BaseFunctional;
+﻿using static BaseFunctional.Assert;
+
+namespace BaseFunctional;
 
 #pragma warning disable IDE1006 // Naming Styles
 
@@ -27,7 +29,7 @@ public sealed class OnToMappingAdaptor<TSource, TTarget> : IMap<TSource>.To<TTar
 
     public OnToMappingAdaptor(IMap<TSource>.OnTo<TTarget> mapper)
     {
-        _mapper = mapper;
+        _mapper = NotNull(mapper);
     }
 
     public TTarget Map(TSource source)
@@ -53,7 +55,7 @@ public sealed class DelegateMapper<TSource, TTarget> : IMap<TSource>.To<TTarget>
 
     public DelegateMapper(Func<TSource, TTarget> map)
     {
-        _map = map;
+        _map = NotNull(map);
     }
 
     public TTarget Map(TSource source) => _map(source);
@@ -65,7 +67,7 @@ public sealed class ResultDelegateMapper<TSource, TTarget> : ITryMap<TSource>.To
 
     public ResultDelegateMapper(Func<TSource, Result<TTarget, MappingError>> map)
     {
-        _map = map;
+        _map = NotNull(map);
     }
 
     public Result<TTarget, MappingError> Map(TSource source) => _map(source);
@@ -78,11 +80,15 @@ public sealed class ChainMapper<T1, T2, T3> : IMap<T1>.To<T3>
 
     public ChainMapper(IMap<T1>.To<T2> map1, IMap<T2>.To<T3> map2)
     {
-        _map1 = map1;
-        _map2 = map2;
+        _map1 = NotNull(map1);
+        _map2 = NotNull(map2);
     }
 
-    public T3 Map(T1 source) => _map2.Map(_map1.Map(source));
+    public T3 Map(T1 source)
+    {
+        var middle = _map1.Map(source);
+        return _map2.Map(middle);
+    }
 }
 
 public sealed class ResultChainMapper<T1, T2, T3> : ITryMap<T1>.To<T3>
@@ -92,8 +98,8 @@ public sealed class ResultChainMapper<T1, T2, T3> : ITryMap<T1>.To<T3>
 
     public ResultChainMapper(ITryMap<T1>.To<T2> map1, ITryMap<T2>.To<T3> map2)
     {
-        _map1 = map1;
-        _map2 = map2;
+        _map1 = NotNull(map1);
+        _map2 = NotNull(map2);
     }
 
     public Result<T3, MappingError> Map(T1 source)
