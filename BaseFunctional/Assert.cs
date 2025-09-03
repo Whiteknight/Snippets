@@ -29,4 +29,26 @@ public static class Assert
             throw new ArgumentOutOfRangeException(name, $"Value must be non-zero positive integer");
         return value;
     }
+
+    public static int InRange(int value, int min, int max, [CallerArgumentExpression(nameof(value))] string? name = null)
+    {
+        if (value < min || value > max)
+            throw new ArgumentOutOfRangeException(name, $"Value {value} must be between {min} and {max}, inclusive");
+        return value;
+    }
+
+    public static int NotNegative(int value, [CallerArgumentExpression(nameof(value))] string? name = null)
+    {
+        if (value < 0)
+            throw new ArgumentOutOfRangeException(name, $"Value {value} must not be negative");
+        return value;
+    }
+
+    public static T IsValid<T>(T value, [CallerArgumentExpression(nameof(value))] string? name = null)
+        where T : ICanBeValid
+    {
+        if (!value.IsValid)
+            throw new ArgumentException("Value is not in a valid state", name);
+        return value;
+    }
 }
