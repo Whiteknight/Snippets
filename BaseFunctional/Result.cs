@@ -39,6 +39,37 @@ public static class Result
 
     public static Result<T, TE1> Create<T, TE1>(TE1 error1)
         => new Result<T, TE1>(default, error1, 1);
+
+    public static Result<T, TE1, TE2> Flatten<T, TE1, TE2>(this Result<Result<T, TE1>, TE2> result)
+        => result.Match(
+            static r1 => r1.Match(
+                static v1 => new Result<T, TE1, TE2>(v1, default, default, 0),
+                static e1 => new Result<T, TE1, TE2>(default, e1, default, 1)),
+            static e2 => new Result<T, TE1, TE2>(default, default, e2, 2));
+
+    public static Result<T, Exception> Try<T>(Func<T> function)
+    {
+        try
+        {
+            return function();
+        }
+        catch (Exception ex)
+        {
+            return ex;
+        }
+    }
+
+    public static Result<T, Exception> Try<T, TData>(TData data, Func<TData, T> function)
+    {
+        try
+        {
+            return function(data);
+        }
+        catch (Exception ex)
+        {
+            return ex;
+        }
+    }
 }
 
 public readonly record struct Result<T, TE1> : IEquatable<T>
