@@ -66,3 +66,11 @@ public static class MaybeExtensions
         => maybe.Match(static m => m, static () => default);
 }
 
+public static class DictionaryMaybeExtensions
+{
+    public static Maybe<TValue> MaybeGetValue<TKey, TValue>(this IReadOnlyDictionary<TKey, TValue> dict, TKey key)
+        => NotNull(dict).TryGetValue(key, out var value)
+            ? new Maybe<TValue>(value, true)
+            : default;
+}
+
