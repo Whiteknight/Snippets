@@ -14,7 +14,7 @@ public static class EnvironmentVariables
         => Environment.GetEnvironmentVariable(name) switch
         {
             "" => new EmptyEnvironmentVariableError(name),
-            string value => Result.New<string, Error>(value!),
+            string value => Result.FromValue<string, Error>(value!),
             _ => new MissingEnvironmentVariableError(name)
         };
 

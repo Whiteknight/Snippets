@@ -101,7 +101,7 @@ public static class ResultTests
         public void Success()
         {
             var r = (Result<int, string>)2;
-            var r2 = r.Bind(i => Result.New<string, string>("ok"));
+            var r2 = r.Bind(i => Result.FromValue<string, string>("ok"));
             r2.IsSuccess.Should().BeTrue();
             r2.GetValueOrDefault("bad").Should().Be("ok");
         }
@@ -110,7 +110,7 @@ public static class ResultTests
         public void Error()
         {
             var r = (Result<int, string>)"fail";
-            var r2 = r.Bind(i => Result.New<string, string>("ok"));
+            var r2 = r.Bind(i => Result.FromValue<string, string>("ok"));
             r2.IsError.Should().BeTrue();
             r2.GetErrorOrDefault("none").Should().Be("fail");
         }
@@ -119,7 +119,7 @@ public static class ResultTests
         public void WithData_Success()
         {
             var r = (Result<int, string>)2;
-            var r2 = r.Bind("x", (i, d) => Result.New<string, string>(d + i));
+            var r2 = r.Bind("x", (i, d) => Result.FromValue<string, string>(d + i));
             r2.IsSuccess.Should().BeTrue();
             r2.GetValueOrDefault("bad").Should().Be("x2");
         }
@@ -131,7 +131,7 @@ public static class ResultTests
         public void Success()
         {
             var r = (Result<int, string>)2;
-            var r2 = r.And(i => Result.New<string, string>("ok"));
+            var r2 = r.And(i => Result.FromValue<string, string>("ok"));
             r2.IsSuccess.Should().BeTrue();
             r2.GetValueOrDefault("bad").Should().Be("ok");
         }

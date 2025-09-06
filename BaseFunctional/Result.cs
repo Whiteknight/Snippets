@@ -5,10 +5,10 @@ namespace BaseFunctional;
 
 public static class Result
 {
-    public static Result<T, TE1> New<T, TE1>(T value)
+    public static Result<T, TE1> FromValue<T, TE1>(T value)
         => new Result<T, TE1>(value, default, 0);
 
-    public static Result<T, TE1> Error<T, TE1>(TE1 error)
+    public static Result<T, TE1> FromError<T, TE1>(TE1 error)
         => new Result<T, TE1>(default, error, 1);
 
     [DoesNotReturn]

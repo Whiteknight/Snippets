@@ -7,11 +7,7 @@ public static class Assert
 {
     [return: NotNull]
     public static T NotNull<T>([NotNull] T? value, [CallerArgumentExpression(nameof(value))] string? name = null)
-    {
-        if (value is null)
-            throw new ArgumentNullException(name);
-        return value!;
-    }
+        => value ?? throw new ArgumentNullException(name);
 
     [return: NotNull]
     public static string NotNullOrEmpty([NotNull] string value, [CallerArgumentExpression(nameof(value))] string? name = null)
