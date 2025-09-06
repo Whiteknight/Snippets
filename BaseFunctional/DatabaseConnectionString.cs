@@ -54,7 +54,7 @@ public class DatabaseConnectionString
     public DatabaseConnectionString With((string Name, string Value)[] parts, char keySeparator, char valueSeparator)
     {
         var first = Parse(ConnectionString);
-        var dedupes = Deduplicate(first.Concat(parts));
+        var dedupes = Deduplicate(parts.Concat(first));
         var str = Stringify(dedupes, keySeparator, valueSeparator);
         return new DatabaseConnectionString(str);
     }
@@ -71,6 +71,7 @@ public class DatabaseConnectionString
             return string.Empty;
         if (parts.Length == 1)
             return $"{parts[0].Name}{valueSeparator}{parts[0].Value}";
+
         var sb = new StringBuilder();
         sb.Append($"{parts[0].Name}{valueSeparator}{parts[0].Value}");
         for (int i = 1; i < parts.Length; i++)
