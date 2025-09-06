@@ -6,4 +6,9 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\BaseFunctional\BaseFunctional.csproj" />
+    <ProjectReference Include="..\DataTypeRelated\DataTypeRelated.csproj" />
+  </ItemGroup>
+
 </Project>

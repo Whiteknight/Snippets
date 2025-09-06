@@ -1,5 +1,3 @@
-using AwesomeAssertions;
-
 namespace BaseFunctional.Tests;
 
 public class Dictionary_GetValueTests

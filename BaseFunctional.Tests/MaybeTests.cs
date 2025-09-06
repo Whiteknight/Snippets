@@ -1,5 +1,3 @@
-using AwesomeAssertions;
-
 namespace BaseFunctional.Tests;
 
 public static class MaybeTests
