@@ -28,7 +28,7 @@ public readonly record struct EntityLookup((string Name, string Value)[] Items)
     }
 }
 
-public abstract record DataError(string Message);
+public abstract record DataError(string Message) : Error(Message);
 
 // For connectivity problems in connecting to the database: IOException, NetworkException, etc
 // Try to include enough information in subclasses, including the actual exception object, to diagnose
