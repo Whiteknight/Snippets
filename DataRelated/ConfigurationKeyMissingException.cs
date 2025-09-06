@@ -1,4 +1,4 @@
-﻿namespace BaseFunctional;
+﻿namespace DataRelated;
 
 #pragma warning disable RCS1194 // Implement exception constructors
 
@@ -15,4 +15,7 @@ public sealed class ConfigurationKeyMissingException : Exception
 
     public static ConfigurationKeyMissingException ConnectionString(string name)
         => new ConfigurationKeyMissingException($"Missing configuration value '{name}' which should be a database connection string");
+
+    public static ConfigurationKeyMissingException EnvironmentVariable(string name)
+        => new ConfigurationKeyMissingException($"Missing environment variable '{name}'");
 }
