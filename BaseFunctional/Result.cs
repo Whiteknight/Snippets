@@ -5,6 +5,12 @@ namespace BaseFunctional;
 
 public static class Result
 {
+    public static Result<T, TE1> New<T, TE1>(T value)
+        => new Result<T, TE1>(value, default, 0);
+
+    public static Result<T, TE1> Error<T, TE1>(TE1 error)
+        => new Result<T, TE1>(default, error, 1);
+
     [DoesNotReturn]
     public static T ThrowResultInvalidException<T>()
         => throw new InvalidOperationException("Result is in an invalid state");
@@ -148,19 +154,15 @@ public readonly record struct Result<T, TE1> : IEquatable<T>
     public Result<TOut, TE1> Bind<TOut>(Func<T, Result<TOut, TE1>> func)
         => Match(NotNull(func), static (v, f) => f(v), static (e, _) => e);
 
+    public Result<TOut, TE1> Bind<TData, TOut>(TData data, Func<T, TData, Result<TOut, TE1>> func)
+        => Match(
+            (func: NotNull(func), data),
+            static (v, d) => d.func(v, d.data),
+            static (e, _) => e);
+
     // Synonym for "Bind", but probably easier to read
     public Result<TOut, TE1> And<TOut>(Func<T, Result<TOut, TE1>> func)
         => Match(NotNull(func), static (v, f) => f(v), static (e, _) => e);
-
-    // Combine two results with different errors, into a single result with two possible errors
-    // TODO: Looking for a better name for this. .And() creates ambiguities with the method above
-    public Result<TOut, TE1, TE2> AndThen<TOut, TE2>(Func<T, Result<TOut, TE2>> func)
-        => Match(
-            NotNull(func),
-            static (v, f) => f(v).Match(
-                static v2 => new Result<TOut, TE1, TE2>(v2, default, default, 0),
-                static e2 => new Result<TOut, TE1, TE2>(default, default, e2, 2)),
-            static (e1, _) => new Result<TOut, TE1, TE2>(default, e1, default, 1));
 
     // Combine two results with different errors into a single result with all possible errors
     public Result<TOut, TE1, TE2, TE3> And<TOut, TE2, TE3>(Func<T, Result<TOut, TE2, TE3>> func)
@@ -172,10 +174,23 @@ public readonly record struct Result<T, TE1> : IEquatable<T>
                 static e3 => new Result<TOut, TE1, TE2, TE3>(default, default, default, e3, 3)),
             static (e1, _) => new Result<TOut, TE1, TE2, TE3>(default, e1, default, default, 1));
 
+    // Combine two results with different errors, into a single result with two possible errors
+    // TODO: Looking for a better name for this. .And() creates ambiguities with the method above
+    public Result<TOut, TE1, TE2> AndThen<TOut, TE2>(Func<T, Result<TOut, TE2>> func)
+        => Match(
+            NotNull(func),
+            static (v, f) => f(v).Match(
+                static v2 => new Result<TOut, TE1, TE2>(v2, default, default, 0),
+                static e2 => new Result<TOut, TE1, TE2>(default, default, e2, 2)),
+            static (e1, _) => new Result<TOut, TE1, TE2>(default, e1, default, 1));
+
     // If this result fails, take the second result. Use the error type of the second result in
     // either case.
     public Result<T, TError2> Or<TError2>(Func<TE1, Result<T, TError2>> func)
         => Match(static v => new Result<T, TError2>(v, default, 0), func);
+
+    public Result<T, TE1> If(Func<T, bool> predicate, Func<T, Result<T, TE1>> then)
+        => Bind((predicate, then, result: this), (v, d) => d.predicate(v) ? then(v) : d.result);
 
     // Map the success result value
     public Result<TOut, TE1> Map<TOut>(Func<T, TOut> map)
@@ -220,6 +235,11 @@ public readonly record struct Result<T, TE1> : IEquatable<T>
             other,
             static (v, o) => v!.Equals(o),
             static (_, _) => false);
+
+    public Maybe<T> ToMaybe()
+        => Match(
+            v => new Maybe<T>(v, true),
+            _ => default);
 }
 
 public readonly record struct Result<T, TE1, TE2>
@@ -380,6 +400,12 @@ public readonly record struct Result<T, TE1, TE2>
 
     public bool Is(Func<T, bool> predicate)
         => Match(predicate, static _ => false, static _ => false);
+
+    public Maybe<T> ToMaybe()
+        => Match(
+            v => new Maybe<T>(v, true),
+            _ => default,
+            _ => default);
 }
 
 public readonly record struct Result<T, TE1, TE2, TE3>
@@ -555,4 +581,11 @@ public readonly record struct Result<T, TE1, TE2, TE3>
 
     public bool Is(Func<T, bool> predicate)
         => Match(predicate, static _ => false, static _ => false, static _ => false);
+
+    public Maybe<T> ToMaybe()
+        => Match(
+            v => new Maybe<T>(v, true),
+            _ => default,
+            _ => default,
+            _ => default);
 }

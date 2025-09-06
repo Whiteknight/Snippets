@@ -18,6 +18,8 @@ public readonly record struct Maybe<T> : IEquatable<Maybe<T>>, IEquatable<T>
 
     public static implicit operator Maybe<T>(T value) => new Maybe<T>(value, true);
 
+    public bool HasValue => _hasValue && _value is not null;
+
     public TOut Match<TOut>(Func<T, TOut> onValue, Func<TOut> onNoValue)
     {
         if (_hasValue && _value is not null)
