@@ -1,4 +1,6 @@
-﻿namespace BaseFunctional;
+﻿using BaseFunctional;
+
+namespace DataTypeRelated;
 
 public static class StringJoinExtensions
 {

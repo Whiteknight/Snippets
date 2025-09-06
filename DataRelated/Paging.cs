@@ -1,6 +1,7 @@
-﻿namespace BaseFunctional;
+﻿namespace DataRelated;
 
 using System.Collections;
+using BaseFunctional;
 using static BaseFunctional.Assert;
 
 public readonly struct Paging : ICanBeValid, IEquatable<Paging>
@@ -35,7 +36,7 @@ public readonly struct Paging : ICanBeValid, IEquatable<Paging>
     {
         offset = offset < 0 ? 0 : offset;
         size = size <= 0 ? 1 : size;
-        var pageNumber = (offset / size) + 1;
+        var pageNumber = offset / size + 1;
         return new Paging(pageNumber, offset, size);
     }
 
@@ -60,7 +61,7 @@ public readonly struct Paging : ICanBeValid, IEquatable<Paging>
         => ChangePageSize(Math.Min(limit, PageSize));
 
     public static int CalculateTotalNumberOfPages(int size, int totalItems)
-        => (totalItems / size) + (totalItems % size > 0 ? 1 : 0);
+        => totalItems / size + (totalItems % size > 0 ? 1 : 0);
 }
 
 public readonly struct Page<T> : IEnumerable<T>, ICanBeValid
@@ -110,17 +111,17 @@ public static class PagingQueryableExtensions
     public static Page<T> ToPagedResult<T>(this IQueryable<T> query, Paging paging)
     {
         if (query is null || !paging.IsValid)
-            return BaseFunctional.Page<T>.Invalid;
+            return DataRelated.Page<T>.Invalid;
 
         var total = query.Count();
         if (total == 0)
-            return BaseFunctional.Page<T>.Empty;
+            return DataRelated.Page<T>.Empty;
 
         IsValid(paging);
         var results = query.Page(paging).ToList();
 
         if (results.Count == 0)
-            return BaseFunctional.Page<T>.OutOfRange(total, paging);
+            return DataRelated.Page<T>.OutOfRange(total, paging);
 
         return new Page<T>(results, total, paging);
     }

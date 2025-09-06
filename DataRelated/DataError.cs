@@ -1,4 +1,7 @@
-﻿namespace BaseFunctional;
+﻿using BaseFunctional;
+using DataTypeRelated;
+
+namespace DataRelated;
 
 // A representation of values used to look up a value in a data store
 // This could be a single primary key (id) or it could be some compound key or even a set of

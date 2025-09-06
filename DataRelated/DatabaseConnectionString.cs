@@ -1,7 +1,8 @@
 ﻿using System.Text;
+using BaseFunctional;
 using static BaseFunctional.Assert;
 
-namespace BaseFunctional;
+namespace DataRelated;
 
 public class DatabaseConnectionString
 {

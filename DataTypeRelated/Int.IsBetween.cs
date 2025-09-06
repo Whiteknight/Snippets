@@ -1,4 +1,4 @@
-﻿namespace BaseFunctional;
+﻿namespace DataTypeRelated;
 
 public static class IntBetweenExtensions
 {

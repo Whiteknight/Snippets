@@ -1,4 +1,6 @@
-﻿namespace BaseFunctional;
+﻿using BaseFunctional;
+
+namespace DataRelated;
 
 // QueryObject pattern. Useful to encapsulate database interactions
 public interface IQuery<in TRequest, TResponse, TError>

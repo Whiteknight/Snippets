@@ -1,6 +1,6 @@
 ﻿using static BaseFunctional.Assert;
 
-namespace BaseFunctional;
+namespace DataTypeRelated;
 
 public static class ExceptionEnumerateExtensions
 {
@@ -24,13 +24,5 @@ public static class ExceptionEnumerateExtensions
                 worklist.Enqueue(ex.InnerException);
             yield return ex;
         }
-    }
-
-    public static Exception GetInnermostException(this Exception exception)
-    {
-        var ex = NotNull(exception);
-        while (ex.InnerException is not null)
-            ex = ex.InnerException;
-        return ex;
     }
 }

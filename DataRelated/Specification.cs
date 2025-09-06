@@ -1,4 +1,6 @@
-﻿namespace BaseFunctional;
+﻿using BaseFunctional;
+
+namespace DataRelated;
 
 public interface IQuerySpecification<T>
 {
