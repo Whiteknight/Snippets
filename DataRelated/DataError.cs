@@ -22,13 +22,12 @@ public readonly record struct EntityLookup((string Name, string Value)[] Items)
     public static EntityLookup Code(string code) => new EntityLookup([("Code", code)]);
 
     public override string ToString()
-    {
-        return Items switch
+        => Items switch
         {
+            null => string.Empty,
             [] => string.Empty,
             [..] => Items.Select(i => $"{i.Name}={i.Value}").StringJoin(", ")
         };
-    }
 }
 
 public abstract record DataError(string Message) : Error(Message);

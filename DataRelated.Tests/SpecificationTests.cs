@@ -50,7 +50,7 @@ public class SpecificationTests
     [Test]
     public void Combine_NullOrEmpty_ReturnsPermissive()
     {
-        var fromNull = CombinedSpecification<int>.Create(null);
+        var fromNull = CombinedSpecification<int>.Create(null!);
         fromNull.Should().BeSameAs(PermissiveSpecification<int>.Instance);
 
         var fromEmpty = CombinedSpecification<int>.Create(Array.Empty<ISpecification<int>>());
