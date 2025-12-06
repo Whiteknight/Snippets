@@ -58,7 +58,7 @@ public readonly record struct Maybe<T> : IEquatable<Maybe<T>>, IEquatable<T>
     public bool Equals(T? other)
         => other is not null && Match(
             other,
-            static (v, o) => v.Equals(o),
+            static (v, o) => v!.Equals(o),
             static _ => false);
 }
 
@@ -75,4 +75,3 @@ public static class DictionaryMaybeExtensions
             ? new Maybe<TValue>(value, true)
             : default;
 }
-

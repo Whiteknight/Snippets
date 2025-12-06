@@ -48,14 +48,12 @@ public static class Validation
     }
 
     public static IValidator<T> Combine<T>(params IValidator<T>[] list)
-    {
-        return list switch
+        => list switch
         {
             [] => new NullValidator<T>(),
             [IValidator<T> v] => v,
             [..] l => new CombinedValidator<T>(l)
         };
-    }
 
     public static IValidator<T> Null<T>() => new NullValidator<T>();
 }
@@ -66,7 +64,7 @@ public sealed class CombinedValidator<T> : IValidator<T>
 
     public CombinedValidator(IEnumerable<IValidator<T>> validators)
     {
-        _validators = validators.OrEmptyIfNull().ToArray();
+        _validators = [.. validators.OrEmptyIfNull()];
     }
 
     public IEnumerable<IValidator<T>> Validators => _validators;

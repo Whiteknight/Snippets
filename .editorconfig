@@ -71,6 +71,7 @@ dotnet_style_prefer_inferred_tuple_names = true
 dotnet_style_prefer_is_null_check_over_reference_equality_method = true
 dotnet_style_prefer_simplified_boolean_expressions = true
 dotnet_style_prefer_simplified_interpolation = true
+dotnet_style_prefer_target_typed_new = false:none
 
 # Field preferences
 dotnet_style_readonly_field = true
@@ -101,6 +102,7 @@ csharp_style_expression_bodied_local_functions = true
 csharp_style_expression_bodied_methods = true
 csharp_style_expression_bodied_operators = true
 csharp_style_expression_bodied_properties = true
+csharp_style_expression_bodied_members = true:when_on_single_line
 
 # Pattern matching preferences
 csharp_style_pattern_matching_over_as_with_null_check = true
@@ -258,3 +260,9 @@ dotnet_naming_style._fieldnamingstyle.required_prefix = _
 dotnet_naming_style._fieldnamingstyle.required_suffix = 
 dotnet_naming_style._fieldnamingstyle.word_separator = 
 dotnet_naming_style._fieldnamingstyle.capitalization = camel_case
+
+# IDE0090: Use 'new(...)'
+dotnet_diagnostic.IDE0090.severity = none
+
+# IDE0290: Use primary constructor
+dotnet_diagnostic.IDE0290.severity = none
