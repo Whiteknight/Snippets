@@ -54,7 +54,16 @@ public sealed class CombinedSpecification<T> : ISpecification<T>
     public IQueryable<T> Apply(IQueryable<T> query)
         => Specifications.Aggregate(query, (q, spec) => spec.Apply(q));
 
-    public bool IsSatisfiedBy(T entity) => Specifications.All(spec => spec.IsSatisfiedBy(entity));
+    public bool IsSatisfiedBy(T entity)
+    {
+        for (int i = 0; i < Specifications.Count; i++)
+        {
+            if (!Specifications[i].IsSatisfiedBy(entity))
+                return false;
+        }
+
+        return true;
+    }
 }
 
 // Spec that returns no results. Useful in, for example, security contexts where a user is not
