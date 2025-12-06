@@ -4,18 +4,18 @@ namespace DataRelated;
 
 public abstract record EnvironmentVariableError(string Name, string Message) : Error($"Environment Variable '{Name}' Error: {Message}");
 
-public sealed record MissingEnvironmentVariableError(string Name) : EnvironmentVariableError(Name, "Is missing");
+public sealed record MissingEnvironmentVariable(string Name) : EnvironmentVariableError(Name, "Is missing");
 
-public sealed record EmptyEnvironmentVariableError(string Name) : EnvironmentVariableError(Name, "Is missing");
+public sealed record UnexpectedEmptyEnvironmentVariable(string Name) : EnvironmentVariableError(Name, "Is missing");
 
 public static class EnvironmentVariables
 {
     public static Result<string, Error> Get(string name)
         => Environment.GetEnvironmentVariable(name) switch
         {
-            "" => new EmptyEnvironmentVariableError(name),
+            "" => new UnexpectedEmptyEnvironmentVariable(name),
             string value => Result.FromValue<string, Error>(value!),
-            _ => new MissingEnvironmentVariableError(name)
+            _ => new MissingEnvironmentVariable(name)
         };
 
     public static Maybe<string> MaybeGet(string name)
