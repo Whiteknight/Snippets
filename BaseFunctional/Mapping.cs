@@ -4,7 +4,7 @@ namespace BaseFunctional;
 
 #pragma warning disable IDE1006 // Naming Styles
 
-public abstract record MappingError(string Message);
+public abstract record MappingError(string Message) : Error(Message);
 
 public sealed record CannotMapNullObject() : MappingError("Source object cannot be null");
 
