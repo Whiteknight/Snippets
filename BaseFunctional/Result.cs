@@ -3,6 +3,9 @@ using static BaseFunctional.Assert;
 
 namespace BaseFunctional;
 
+// Result is a specialized Either where the second option is an Error
+// By specifying that the second option is Error, we can have some methods which
+// are fluent in their error-handling and consideration.
 public static class Result
 {
     public static Result<T, TE1> FromValue<T, TE1>(T value)
@@ -25,7 +28,7 @@ public static class Result
                 static (e2, _) => new Result<TOut, TE1, TE2>(default, default, e2, 2)),
             static (e1, _) => new Result<TOut, TE1, TE2>(default, e1, default, 1));
 
-    // Given a result and an operation which returns a second result, Join them together into 
+    // Given a result and an operation which returns a second result, Join them together into
     // a single new result. If both input results are success, return a new combined result value.
     // Otherwise if either result is an error, return a failure result with that error.
     public static Result<TOut, TE1, TE2> Combine<T1, TE1, T2, TE2, TOut>(this Result<T1, TE1> r1, Func<Result<T2, TE2>> getR2, Func<T1, T2, TOut> combine)
@@ -257,12 +260,15 @@ public readonly record struct Result<T, TE1, TE2>
             case 0:
                 _value = NotNull(value);
                 break;
+
             case 1:
                 _e1 = NotNull(e1);
                 break;
+
             case 2:
                 _e2 = NotNull(e2);
                 break;
+
             default:
                 _index = -1;
                 break;
@@ -424,15 +430,19 @@ public readonly record struct Result<T, TE1, TE2, TE3>
             case 0:
                 _value = NotNull(value);
                 break;
+
             case 1:
                 _e1 = NotNull(e1);
                 break;
+
             case 2:
                 _e2 = NotNull(e2);
                 break;
+
             case 3:
                 _e3 = NotNull(e3);
                 break;
+
             default:
                 _index = -1;
                 break;

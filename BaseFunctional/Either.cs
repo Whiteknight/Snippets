@@ -21,6 +21,7 @@ public static class Either
             t2 => new Either<T2, T1>(t2, default, 0));
 }
 
+// Either is one or the other, never both and never neither
 public readonly record struct Either<TLeft, TRight>
 {
     private readonly int _index;
