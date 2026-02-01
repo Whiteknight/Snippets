@@ -266,3 +266,6 @@ dotnet_diagnostic.IDE0090.severity = none
 
 # IDE0290: Use primary constructor
 dotnet_diagnostic.IDE0290.severity = none
+
+# RCS1194: Exception constructors
+dotnet_diagnostic.RCS1194.severity = none
