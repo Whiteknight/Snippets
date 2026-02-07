@@ -46,6 +46,8 @@ public static class CamelCaseAbbreviationFinder
                 buffer[j++] = (i, c);
         }
 
+        // Note that we ignore whitespace and punctuation. A real CamelCase or pascalCase string
+        // wouldn't contain those anyway so we can safely ignore them.
         return CreateResult(buffer, j < length ? j : length);
     }
 

@@ -26,7 +26,7 @@ public interface IRollback
     void Execute();
 }
 
-// (rough) example of a command with a rollback/compensation method. 
+// (rough) example of a command with a rollback/compensation method.
 // ICommand is an encapsulated rollback object, and contains whatever data the operation needs to rollback
 // If Execute returns error there's nothing to revert.
 // But if Execute returns success and then a subsequent error happens, we can revert by
