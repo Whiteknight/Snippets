@@ -1,11 +1,13 @@
-﻿namespace EventsAndMessaging;
+﻿using BaseFunctional;
+
+namespace EventsAndMessaging;
 
 // Options are dependent on the internal implementation.
 public readonly record struct RequestOptions();
 
-public interface IRequestResponseChannel<T>
+public interface IRequestResponseChannel<TRequest, TResponse>
 {
-    Task<TResponse> SendRequest<TResponse>(T message, RequestOptions options);
+    Task<Result<TResponse, Error>> SendRequest(TRequest message, RequestOptions options);
 
-    IDisposable Listen(IListener<T> consumer);
+    IDisposable Listen(IListener<TRequest, TResponse> consumer);
 }

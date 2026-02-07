@@ -4,5 +4,5 @@ public interface IMessageBus
 {
     IPubSubChannel<T> GetPubSubChannel<T>();
 
-    IRequestResponseChannel<T> GetRequestResponseChannel<T>();
+    IRequestResponseChannel<TRequest, TResponse> GetRequestResponseChannel<TRequest, TResponse>();
 }

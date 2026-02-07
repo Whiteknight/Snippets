@@ -1,6 +1,8 @@
-﻿namespace EventsAndMessaging;
+﻿using BaseFunctional;
 
-public interface IListener<T>
+namespace EventsAndMessaging;
+
+public interface IListener<TRequest, TResponse>
 {
-    public void Listen(MessageControl control, T request);
+    public Task<Result<TResponse, Error>> Listen(MessageControl control, TRequest request);
 }
